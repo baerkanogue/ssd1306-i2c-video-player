@@ -1,19 +1,51 @@
 import os
-import shutil
 import imageio.v3 as imageiov3
 from PIL import Image
 from pathlib import Path
 from colorama import Fore
+from dataclasses import dataclass
+
+
+@dataclass
+class ProcessData:
+    input_video_path: str | Path
+    output_path: str | Path
+    oled_resolution_width_height: tuple[int, int]
+    dither_mode: Image.Dither
 
 
 def main() -> None:
     OUTPUT_DIR: str = "output"
+    OUTPUT_FILE_NAME: str = "video.oled"
     OLED_RESOLUTION_WIDTH_HEIGHT: tuple[int, int] = (128, 64)
 
     make_dirs(OUTPUT_DIR)
-    process_frames(OUTPUT_DIR, OLED_RESOLUTION_WIDTH_HEIGHT)
+    output_file_path: Path = Path(OUTPUT_DIR, OUTPUT_FILE_NAME)
 
-    print(f"Video outputted in {Path(OUTPUT_DIR).resolve()}")
+    process_data: ProcessData = ProcessData(
+        input_video_path=get_video_path(),
+        output_path=output_file_path,
+        oled_resolution_width_height=OLED_RESOLUTION_WIDTH_HEIGHT,
+        dither_mode=choose_dither(),
+    )
+
+    process_frames(process_data)
+
+    print(f"Video outputted in {output_file_path.resolve()}")
+
+
+def print_execution_time(func):
+    def wrapper(*args, **kwargs):
+        from time import time_ns
+
+        start_time: int = time_ns()
+        result = func(*args, **kwargs)
+        total_time: float = (time_ns() - start_time) / 1e9
+        print(f"Execution time: {total_time:.3f}s")
+
+        return result
+
+    return wrapper
 
 
 def make_dirs(output_dir: str) -> None:
@@ -32,14 +64,16 @@ def image_to_oled_bytes(
 ) -> bytearray:
     width: int = oled_resolution_width_height[0]
     height: int = oled_resolution_width_height[1]
+
     buffer: bytearray = bytearray(width * height // 8)
 
-    pixels = image.load()
-    if not pixels:
-        raise Exception("image.load() failure")
+    pixels: Image.core.PixelAccess | None = image.load()
+    if pixels is None:
+        raise RuntimeError("image.load() failure")
 
+    pages: int = height // 8
     for x in range(width):
-        for page in range(height // 8):
+        for page in range(pages):
             byte = 0
             for bit in range(8):
                 y = page * 8 + bit
@@ -61,24 +95,19 @@ def choose_dither() -> Image.Dither:
             return Image.Dither.NONE
 
 
-def process_frames(
-    output_dir: str, oled_resolution_width_height: tuple[int, int]
-) -> None:
-    video_path: str = get_video_path()
-    OUTPUT_FILE_NAME: str = "video.oled"
-
-    output_path: Path = Path(output_dir, OUTPUT_FILE_NAME)
+@print_execution_time
+def process_frames(process_data: ProcessData) -> None:
+    video_path: str | Path = process_data.input_video_path
+    output_path: str | Path = process_data.output_path
+    oled_resolution: tuple[int, int] = process_data.oled_resolution_width_height
+    dither_mode: Image.Dither = process_data.dither_mode
 
     with open(output_path, "wb") as video_file:
         for frame in imageiov3.imiter(video_path, plugin="pyav"):
             image: Image.Image = Image.fromarray(frame)
-            image = image.resize(oled_resolution_width_height).convert(
-                mode="1", dither=choose_dither()
-            )
+            image = image.resize(oled_resolution).convert(mode="1", dither=dither_mode)
 
-            output_image: bytearray = image_to_oled_bytes(
-                image, oled_resolution_width_height
-            )
+            output_image: bytearray = image_to_oled_bytes(image, oled_resolution)
             video_file.write(output_image)
 
 

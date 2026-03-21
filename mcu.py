@@ -1,4 +1,3 @@
-import os
 from machine import I2C
 from ssd1306 import *
 
@@ -9,6 +8,7 @@ def main() -> None:
 
     i2c = I2C(freq=int(1e6))
     oled_address: int = i2c.scan()[0]
+    print(f"Device found at address {oled_address} ({hex(oled_address)})")
 
     oled: SSD1306_I2C = SSD1306_I2C(OLED_WIDTH, OLED_HEIGHT, i2c, oled_address)
 

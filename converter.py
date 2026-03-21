@@ -20,10 +20,10 @@ def main() -> None:
     print(f"Video outputted in {Path(OUTPUT_DIR).resolve()}")
 
 
-def make_dirs(tmp_frames_dir: str, frames_dir: str) -> None:
+def make_dirs(tmp_frames_dir: str, output_dir: str) -> None:
     try:
         os.makedirs(tmp_frames_dir)
-        os.makedirs(frames_dir)
+        os.makedirs(output_dir)
     except OSError:
         pass
 

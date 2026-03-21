@@ -1,12 +1,14 @@
 #!/bin/bash
 
+output_file=output/video.oled
+mcu_video_file=:video.oled
+
 python converter.py
 
-mpremote rm -r :video
-mpremote mkdir :video
-mpremote cp -r video/* :video
+mpremote rm -r $mcu_video_file
+mpremote cp $output_file $mcu_video_file
 
-# rm -r video
+rm -r $output_file
 
 echone Now playing...
 mpremote run mcu.py

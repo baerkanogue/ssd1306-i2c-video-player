@@ -16,14 +16,20 @@ def main() -> None:
 
 
 def play_video(oled: SSD1306, loop: bool = True) -> None:
-    video_dir: str = "video"
+    video_path: str = "video.oled"
+    FRAME_SIZE: int = 1024
 
-    while loop:
+    while True:
+        with open(video_path, "rb") as video_file:
+            while True:
+                frame = video_file.read(FRAME_SIZE)
+                if not frame:
+                    break
 
-        for file_name in sorted(os.listdir(video_dir)):
-            frame: str = video_dir + "/" + file_name
-            oled.buffer[:] = open(frame, "rb").read()
-            oled.show()
+                oled.buffer[:] = frame
+                oled.show()
+        if not loop:
+            break
 
 
 if __name__ == "__main__":

@@ -7,8 +7,8 @@ from colorama import Fore
 
 
 def main() -> None:
-    TMP_FRAMES_DIR: str = ".tmp.frames"
-    OUTPUT_DIR: str = "video"
+    TMP_FRAMES_DIR: str = ".tmp"
+    OUTPUT_DIR: str = "output"
     OLED_RESOLUTION_WIDTH_HEIGHT: tuple[int, int] = (128, 64)
 
     make_dirs(TMP_FRAMES_DIR, OUTPUT_DIR)
@@ -83,22 +83,19 @@ def process_frames(
             break
 
     tmp_path: Path = Path(tmp_dir)
-    tmp_image_path: Path = Path(tmp_dir, "frame")
-    for index, image_path in enumerate(sorted(tmp_path.glob("*.png"))):
-        image: Image.Image = Image.open(image_path)
-        image = image.resize(oled_resolution_width_height).convert(
-            mode="1", dither=dither
-        )
-        processed_image_path: str = f"{tmp_image_path}_{index:04d}.png"
-        image.save(processed_image_path)
+    output_path: Path = Path(output_dir, "video.oled")
 
-        output_path: Path = Path(output_dir, "frame")
-        output_image_path = f"{output_path}_{index:04d}.oled"
-        output_image: bytearray = image_to_oled_bytes(
-            image, oled_resolution_width_height
-        )
-        with open(output_image_path, "wb") as file:
-            file.write(output_image)
+    with open(output_path, "wb") as video_file:
+        for image_path in sorted(tmp_path.glob("*.png")):
+            image: Image.Image = Image.open(image_path)
+            image = image.resize(oled_resolution_width_height).convert(
+                mode="1", dither=dither
+            )
+
+            output_image: bytearray = image_to_oled_bytes(
+                image, oled_resolution_width_height
+            )
+            video_file.write(output_image)
 
 
 def color_print(message: str | Exception, color: str) -> None:

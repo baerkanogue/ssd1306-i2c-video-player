@@ -1,0 +1,5 @@
+av==17.0.0
+colorama==0.4.6
+ImageIO==2.37.3
+numpy==2.4.3
+pillow==12.1.1

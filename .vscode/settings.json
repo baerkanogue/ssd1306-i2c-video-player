@@ -1,0 +1,6 @@
+{
+    "python.analysis.stubPath": "${workspaceFolder}/typings",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none"
+    }
+}

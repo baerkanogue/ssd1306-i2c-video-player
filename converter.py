@@ -7,22 +7,17 @@ from colorama import Fore
 
 
 def main() -> None:
-    TMP_FRAMES_DIR: str = ".tmp"
     OUTPUT_DIR: str = "output"
     OLED_RESOLUTION_WIDTH_HEIGHT: tuple[int, int] = (128, 64)
 
-    make_dirs(TMP_FRAMES_DIR, OUTPUT_DIR)
-    extract_frames(TMP_FRAMES_DIR)
-    process_frames(TMP_FRAMES_DIR, OUTPUT_DIR, OLED_RESOLUTION_WIDTH_HEIGHT)
-
-    shutil.rmtree(TMP_FRAMES_DIR)
+    make_dirs(OUTPUT_DIR)
+    process_frames(OUTPUT_DIR, OLED_RESOLUTION_WIDTH_HEIGHT)
 
     print(f"Video outputted in {Path(OUTPUT_DIR).resolve()}")
 
 
-def make_dirs(tmp_frames_dir: str, output_dir: str) -> None:
+def make_dirs(output_dir: str) -> None:
     try:
-        os.makedirs(tmp_frames_dir)
         os.makedirs(output_dir)
     except OSError:
         pass
@@ -30,19 +25,6 @@ def make_dirs(tmp_frames_dir: str, output_dir: str) -> None:
 
 def get_video_path() -> str:
     return input("Enter video path: ").strip("\"' ")
-
-
-def extract_frames(output_dir: str) -> None:
-    safe_path: Path = Path(output_dir, "frame")
-    while True:
-        try:
-            for index, frame in enumerate(
-                imageiov3.imiter(get_video_path(), plugin="pyav")
-            ):
-                imageiov3.imwrite(f"{safe_path}_{index:04d}.png", frame)
-            return
-        except Exception as error:
-            color_print(error, Fore.RED)
 
 
 def image_to_oled_bytes(
@@ -70,26 +52,28 @@ def image_to_oled_bytes(
     return buffer
 
 
-def process_frames(
-    tmp_dir: str, output_dir: str, oled_resolution_width_height: tuple[int, int]
-) -> None:
+def choose_dither() -> Image.Dither:
     while True:
         dither_input: str = input("Use dither ? [Y/n]: ").lower()
         if dither_input in ("", "y"):
-            dither: Image.Dither = Image.Dither.FLOYDSTEINBERG
-            break
+            return Image.Dither.FLOYDSTEINBERG
         elif dither_input == "n":
-            dither: Image.Dither = Image.Dither.NONE
-            break
+            return Image.Dither.NONE
 
-    tmp_path: Path = Path(tmp_dir)
-    output_path: Path = Path(output_dir, "video.oled")
+
+def process_frames(
+    output_dir: str, oled_resolution_width_height: tuple[int, int]
+) -> None:
+    video_path: str = get_video_path()
+    OUTPUT_FILE_NAME: str = "video.oled"
+
+    output_path: Path = Path(output_dir, OUTPUT_FILE_NAME)
 
     with open(output_path, "wb") as video_file:
-        for image_path in sorted(tmp_path.glob("*.png")):
-            image: Image.Image = Image.open(image_path)
+        for frame in imageiov3.imiter(video_path, plugin="pyav"):
+            image: Image.Image = Image.fromarray(frame)
             image = image.resize(oled_resolution_width_height).convert(
-                mode="1", dither=dither
+                mode="1", dither=choose_dither()
             )
 
             output_image: bytearray = image_to_oled_bytes(

@@ -93,9 +93,18 @@ def process_frames(process_data: ProcessData) -> None:
     imageiov3_plugin: str = "pyav"
 
     metadata: dict[str, Any] = imageiov3.immeta(video_path, plugin=imageiov3_plugin)
-    print(metadata.get("fps"))
+    metadata_fps: float | None = metadata.get("fps")
+    if not metadata_fps:
+        metadata_fps = 30.0
+        print("Metadata not found, defaulting to 30.0FPS")
+    else:
+        print("Metadata FPS: ", metadata_fps)
+
+    video_fps_byte: bytes = round(metadata_fps).to_bytes()
 
     with open(output_path, "wb") as video_file:
+        video_file.write(video_fps_byte)
+
         for frame in imageiov3.imiter(video_path, plugin=imageiov3_plugin):
             image: Image.Image = Image.fromarray(frame)
             image = image.resize(oled_resolution).convert(mode="1", dither=dither_mode)

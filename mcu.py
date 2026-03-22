@@ -14,7 +14,7 @@ def main() -> None:
     oled: SSD1306_I2C = SSD1306_I2C(OLED_WIDTH, OLED_HEIGHT, i2c, oled_address)
 
     try:
-        play_video(oled, cap_fps=False)
+        play_video(oled)
     except KeyboardInterrupt:
         say_goodbye(oled, OLED_HEIGHT)
 

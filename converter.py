@@ -4,6 +4,8 @@ from PIL import Image
 from pathlib import Path
 from colorama import Fore
 from dataclasses import dataclass
+from function_timer import print_execution_time
+from typing import Any
 
 
 @dataclass
@@ -32,20 +34,6 @@ def main() -> None:
     process_frames(process_data)
 
     print(f"Video outputted in {output_file_path.resolve()}")
-
-
-def print_execution_time(func):
-    def wrapper(*args, **kwargs):
-        from time import time_ns
-
-        start_time: int = time_ns()
-        result = func(*args, **kwargs)
-        total_time: float = (time_ns() - start_time) / 1e9
-        print(f"Execution time: {total_time:.3f}s")
-
-        return result
-
-    return wrapper
 
 
 def make_dirs(output_dir: str) -> None:
@@ -102,8 +90,13 @@ def process_frames(process_data: ProcessData) -> None:
     oled_resolution: tuple[int, int] = process_data.oled_resolution_width_height
     dither_mode: Image.Dither = process_data.dither_mode
 
+    imageiov3_plugin: str = "pyav"
+
+    metadata: dict[str, Any] = imageiov3.immeta(video_path, plugin=imageiov3_plugin)
+    print(metadata.get("fps"))
+
     with open(output_path, "wb") as video_file:
-        for frame in imageiov3.imiter(video_path, plugin="pyav"):
+        for frame in imageiov3.imiter(video_path, plugin=imageiov3_plugin):
             image: Image.Image = Image.fromarray(frame)
             image = image.resize(oled_resolution).convert(mode="1", dither=dither_mode)
 

@@ -10,6 +10,6 @@ mpremote cp $output_file $mcu_video_file
 
 rm -r $output_file
 
-echone Now playing...
+echo Now playing...
 mpremote run mcu.py
 

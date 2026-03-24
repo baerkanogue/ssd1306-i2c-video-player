@@ -1,12 +1,61 @@
 # Overview
 
+
 ## Converter
-Takes a **video file** from the computer, converts it to **1-bit monochrome with optional dithering**, turn it into a custom file format compatible with **SSD1306 OLED** displays.
+Takes a **video file** from the computer, converts it to **1-bit monochrome with optional dithering**, then turns it into a custom file format compatible with **SSD1306 OLED** displays.
 
 ## MCU
-Plays the custom video on a **I2C connected SS31306 OLED** display. The script is supposing a wiring of the MCU and I2C OLED using default I2C pins. To match your configuration, please edit
-
+Plays the custom video on an **I2C connected SSD1306 OLED** display. The script assumes a wiring configuration of the MCU and the I2C OLED using the default I2C pins. To match your configuration, please edit *[mcu.py](./mcu.py)*.
 
 
 https://github.com/user-attachments/assets/3339a3f1-2b0e-485c-8454-463fd642dadd
+
+
+# Running
+
+## Requirements
+
+|Packages|Infos|
+|:---:|:---:|
+|av, ImageIO|Extract frames from video|
+|pillow|Frames to monochrome and dither|
+|mpremote, pyserial|Connect to the MCU|
+|colorama|Debug|
+|numpy, platformdirs|Internal dependencies|
+
+See *[requirements.txt](./requirements.txt)*.
+
+To install dependencies and prepare Python to execute the scripts:
+```sh
+# Linux
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+```powershell
+# Windows
+py -m venv .venv
+.\.venv\Scripts\Activate
+pip install -r requirements.txt
+```
+
+Now you need to be sure mpremote has a connection to a MCU with MicroPython firmware:
+```sh
+mpremote connect auto
+```
+
+## Linux
+You can directly run *[convert_and_run.sh](./convert_and_run.sh)*. It will automatically call the converter, copy the video to the connected MCU, and run the video.
+
+## Windows
+```powershell
+py converter.py
+
+mpremote rm :video.oled
+mpremote cp .\output\video.oled :video.oled
+
+Remove-Item .\output\video.oled
+
+mpremote run mcu.py
+```
 

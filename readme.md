@@ -20,6 +20,7 @@ https://github.com/user-attachments/assets/3339a3f1-2b0e-485c-8454-463fd642dadd
 |av, ImageIO|Extract frames from video|
 |pillow|Frames to monochrome and dither|
 |mpremote, pyserial|Connect to the MCU|
+|ssd1306|SSD1306 library for the MPC|
 |colorama|Debug|
 |numpy, platformdirs|Internal dependencies|
 
@@ -42,6 +43,11 @@ pip install -r requirements.txt
 Now you need to be sure mpremote has a connection to a MCU with MicroPython firmware:
 ```sh
 mpremote connect auto
+```
+
+You'll also have to install the [SSD1306 library from MicroPython-lib](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/display/ssd1306/ssd1306.py) on the MCU:
+```sh
+mpremote mip install ssd1306
 ```
 
 ## Linux

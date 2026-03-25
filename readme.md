@@ -9,7 +9,7 @@ Takes a **video file** from the computer, converts it to **1-bit monochrome with
 Plays the custom video on an **I2C connected SSD1306 OLED** display. The script assumes a wiring configuration of the MCU and the I2C OLED using the default I2C pins. To match your configuration, please edit *[mcu.py](./mcu.py)*. The OLED video will be capped at the original video's framerate (max ~75FPS).
 
 
-https://github.com/user-attachments/assets/31393b4c-303f-4b38-9923-0db39c0304e6
+https://github.com/user-attachments/assets/c7a1c15a-80b9-4000-a8b7-4ccaa5f1d310
 
 
 # Running
